@@ -2,7 +2,7 @@
   <div class="category">
     <h2>{{ title }}</h2>
     <ul>
-      <li v-for="(player, i) in players" :key="i">
+      <li v-for="(player, i) in items" :key="i">
         {{ i + 1 }}. {{ player.name }} – {{ player.value }}
       </li>
     </ul>
@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent, PropType, ref, onMounted } from 'vue'
 
 interface Player {
   name: string
@@ -21,7 +21,30 @@ export default defineComponent({
   name: 'LeaderboardCategory',
   props: {
     title: { type: String, required: true },
-    players: { type: Array as PropType<Player[]>, required: true }
+    metric: { type: String, default: 'rating' }
+  },
+  setup(props) {
+    const items = ref<Player[]>([])
+
+    async function loadTops(metric = props.metric) {
+      const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+      const endpoint = `${baseUrl}/top?metric=${metric}`
+
+      try {
+        const response = await fetch(endpoint)
+        const result = await response.json()
+        console.log('Weekly top response:', result)
+        items.value = result.rows // because backend returns { week, metric, rows }
+      } catch (error) {
+        console.error('Error fetching tops:', error)
+      }
+    }
+
+    onMounted(() => {
+      loadTops()
+    })
+
+    return { items }
   }
 })
 </script>
