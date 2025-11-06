@@ -41,15 +41,20 @@ async function loadTops(metric = props.metric || 'rating') {
     }
 
     const result = await response.json()
-    // Assign rows from backend
-    items.value = result.rows
-  } catch (err: any) {
+    // Assign rows from backend (ensure type safety)
+    items.value = result.rows as Player[]
+  } catch (err) {
     console.error('Fetch error:', err)
-    error.value = err.message
+    if (err instanceof Error) {
+      error.value = err.message
+    } else {
+      error.value = String(err)
+    }
   } finally {
     loading.value = false
   }
 }
+
 
 // Load leaderboard on mount
 onMounted(() => loadTops())
