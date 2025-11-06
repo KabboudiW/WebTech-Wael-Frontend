@@ -1,79 +1,86 @@
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue'
+
+// Props
+interface Player {
+  id: number
+  name: string
+  team: string
+  rating?: number
+  goals?: number
+  assists?: number
+  chancesCreated?: number
+  missedChances?: number
+}
+
+const props = defineProps<{
+  title: string
+  metric?: 'rating' | 'goals' | 'assists' | 'chances' | 'missed'
+}>()
+
+const items = ref<Player[]>([])
+const loading = ref(false)
+const error = ref<string | null>(null)
+
+async function loadTops(metric = props.metric || 'rating') {
+  const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+  const endpoint = `${baseUrl}/api/weekly/top?metric=${metric}`
+
+  loading.value = true
+  error.value = null
+
+  try {
+    const response = await fetch(endpoint)
+    if (!response.ok) throw new Error('Network response was not ok')
+    const result = await response.json()
+    items.value = result.rows
+  } catch (err: any) {
+    console.error('Error fetching tops:', err)
+    error.value = err.message
+  } finally {
+    loading.value = false
+  }
+}
+
+// Load on mount
+onMounted(() => loadTops())
+
+// Watch for metric changes
+watch(() => props.metric, (newMetric) => {
+  if (newMetric) loadTops(newMetric)
+})
+</script>
+
 <template>
-  <div class="category">
-    <h2>{{ title }}</h2>
-    <ul>
-      <li v-for="(player, i) in items" :key="i">
-        {{ i + 1 }}. {{ player.name }} – {{ player.value }}
+  <div class="leaderboard-category">
+    <h2>{{ props.title }}</h2>
+
+    <div v-if="loading">Loading...</div>
+    <div v-if="error" class="error">{{ error }}</div>
+
+    <ul v-if="!loading && !error">
+      <li v-for="player in items" :key="player.id">
+        <strong>{{ player.name }}</strong> - {{ player.team }} -
+        <span v-if="props.metric === 'rating'">{{ player.rating }}</span>
+        <span v-else-if="props.metric === 'goals'">{{ player.goals }}</span>
+        <span v-else-if="props.metric === 'assists'">{{ player.assists }}</span>
+        <span v-else-if="props.metric === 'chances'">{{ player.chancesCreated }}</span>
+        <span v-else-if="props.metric === 'missed'">{{ player.missedChances }}</span>
       </li>
     </ul>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, ref, onMounted } from 'vue'
-
-interface Player {
-  name: string
-  value: number
-}
-
-export default defineComponent({
-  name: 'LeaderboardCategory',
-  props: {
-    title: { type: String, required: true },
-    metric: { type: String, default: 'rating' }
-  },
-  setup(props) {
-    const items = ref<Player[]>([])
-
-    async function loadTops(metric = props.metric) {
-      const baseUrl = process.env.VITE_BACKEND_BASE_URL
-      const endpoint = `${baseUrl}/top?metric=${metric}`
-
-      try {
-        const response = await fetch(endpoint)
-        const result = await response.json()
-        console.log('Weekly top response:', result)
-        items.value = result.rows // because backend returns { week, metric, rows }
-      } catch (error) {
-        console.error('Error fetching tops:', error)
-      }
-    }
-
-    onMounted(() => {
-      loadTops()
-    })
-
-    return { items }
-  }
-})
-</script>
-
 <style scoped>
-.category {
-  background-color: #fff;
-  padding: 1.5rem;
-  margin: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+.leaderboard-category {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  max-width: 400px;
+  margin: 1rem auto;
 }
 
-.category h2 {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.category ul {
-  list-style: none;
-  padding: 0;
-}
-
-.category li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-.category li:last-child {
-  border-bottom: none;
+.error {
+  color: red;
 }
 </style>
