@@ -10,6 +10,8 @@ import { defineComponent, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import LeaderboardCategory from '../components/LeaderboardCategory.vue'
 
+type Metric = "rating" | "goals" | "assists" | "chances" | "missed"
+
 export default defineComponent({
   components: { LeaderboardCategory },
   setup() {
@@ -17,7 +19,7 @@ export default defineComponent({
     const category = computed(() => route.params.name as string)
 
     // Map human-readable category to backend metric
-    const metricMap: Record<string, string> = {
+    const metricMap: Record<string, Metric> = {
       "Best Rated": "rating",
       "Goals": "goals",
       "Assists": "assists",
@@ -25,7 +27,7 @@ export default defineComponent({
       "Missed Chances": "missed"
     }
 
-    const metric = computed(() => metricMap[category.value] || "rating")
+    const metric = computed<Metric>(() => metricMap[category.value] || "rating")
 
     return { category, metric }
   }
