@@ -23,7 +23,7 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 
 async function loadTops(metric = props.metric || 'rating') {
-  const baseUrl = process.env.VITE_BACKEND_BASE_URL
+  const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
   const endpoint = `${baseUrl}/api/weekly/top?metric=${metric}`
 
   loading.value = true
