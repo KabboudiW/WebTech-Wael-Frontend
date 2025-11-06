@@ -27,7 +27,7 @@ export default defineComponent({
     const items = ref<Player[]>([])
 
     async function loadTops(metric = props.metric) {
-      const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+      const baseUrl = process.env.VITE_BACKEND_BASE_URL
       const endpoint = `${baseUrl}/top?metric=${metric}`
 
       try {
