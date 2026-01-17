@@ -4,6 +4,15 @@
 
     <h1 class="title">{{ leagueTitle }}</h1>
 
+    <!-- 🔍 Search direkt unter League -->
+    <div class="search-row">
+      <input
+        v-model="search"
+        class="search"
+        placeholder="Search player or team"
+      />
+    </div>
+
     <div class="controls">
       <label class="week">
         Week
@@ -11,20 +20,20 @@
       </label>
 
       <div class="metrics">
-        <button :class="{active: metric==='rating'}" @click="metric='rating'">Best Rated</button>
-        <button :class="{active: metric==='goals'}" @click="metric='goals'">Goals</button>
-        <button :class="{active: metric==='assists'}" @click="metric='assists'">Assists</button>
-        <button :class="{active: metric==='chances'}" @click="metric='chances'">Chances Created</button>
-        <button :class="{active: metric==='missed'}" @click="metric='missed'">Missed Chances</button>
+        <button :class="{ active: metric === 'rating' }" @click="metric = 'rating'">Best Rated</button>
+        <button :class="{ active: metric === 'goals' }" @click="metric = 'goals'">Goals</button>
+        <button :class="{ active: metric === 'assists' }" @click="metric = 'assists'">Assists</button>
+        <button :class="{ active: metric === 'chances' }" @click="metric = 'chances'">Chances Created</button>
+        <button :class="{ active: metric === 'missed' }" @click="metric = 'missed'">Missed Chances</button>
       </div>
     </div>
 
-    <!-- ✅ Leaderboard component -->
     <LeaderboardCategory
       :title="`${leagueTitle} — ${metric.toUpperCase()}`"
       :metric="metric"
       :week="week"
       :league="leagueCode"
+      :search="search"
     />
   </div>
 </template>
@@ -47,6 +56,7 @@ const leagueTitle = computed(() => {
 
 const metric = ref<Metric>('rating')
 const week = ref('CURRENT')
+const search = ref('')
 </script>
 
 <style scoped>
@@ -55,11 +65,59 @@ const week = ref('CURRENT')
   margin: 2rem auto;
   padding: 0 16px;
 }
-.title { margin: 12px 0 8px; }
-.controls { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin: 12px 0 16px; }
-.week { display:flex; flex-direction: column; gap: 6px; }
-.week input { padding: 10px; border: 1px solid #ccc; border-radius: 10px; }
-.metrics { display:flex; gap: 8px; flex-wrap: wrap; }
-.metrics button { padding: 8px 12px; border-radius: 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
-.metrics button.active { border-color: #111; font-weight: 600; }
+
+.title {
+  margin: 12px 0 8px;
+}
+
+.search-row {
+  margin: 8px 0 14px;
+}
+
+.search {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  width: 300px;
+  max-width: 100%;
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 12px 0 16px;
+}
+
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.week input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+}
+
+.metrics {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.metrics button {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+
+.metrics button.active {
+  border-color: #111;
+  font-weight: 600;
+}
 </style>

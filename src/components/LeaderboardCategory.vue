@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 
 // Define Player type matching backend JSON
 interface Player {
@@ -15,6 +15,7 @@ const props = defineProps<{
   metric?: 'rating' | 'goals' | 'assists' | 'chances' | 'missed'
   week?: string
   league?: string
+  search?: string
 }>()
 
 
@@ -36,7 +37,13 @@ async function loadTops(metric = props.metric || 'rating') {
   params.set('week', props.week || 'CURRENT')
   if (props.league) params.set('league', props.league)
 
+// ✅ add this
+  if (props.search && props.search.trim().length > 0) {
+    params.set('search', props.search.trim())
+  }
+
   const endpoint = `${baseUrl}/api/weekly/top?${params.toString()}`
+
 
 
   loading.value = true
@@ -65,14 +72,14 @@ async function loadTops(metric = props.metric || 'rating') {
 }
 
 
-// Load leaderboard on mount
-onMounted(() => loadTops())
-
 // Reload leaderboard if metric changes
 watch(
-  () => [props.metric, props.week, props.league],
-  () => loadTops(props.metric || 'rating')
+  () => [props.metric, props.week, props.league, (props.search || '').trim()],
+  () => loadTops(props.metric || 'rating'),
+  { immediate: true }
 )
+
+
 
 </script>
 
@@ -87,7 +94,7 @@ watch(
       <li v-for="player in items" :key="player.playerId">
         <strong>{{ player.playerName }}</strong> - {{ player.team }} -
         {{ player.value }}
-        <span v-if="props.metric === 'rating'">rating</span>
+        <span v-if="(props.metric || 'rating') === 'rating'">rating</span>
         <span v-else-if="props.metric === 'goals'">goals</span>
         <span v-else-if="props.metric === 'assists'">assists</span>
         <span v-else-if="props.metric === 'chances'">chances created</span>
