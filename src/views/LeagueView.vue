@@ -18,7 +18,10 @@
     <div class="controls">
       <label class="week">
         Week
-        <input v-model="week" placeholder="CURRENT or 2026-W03" />
+        <select v-model="week" class="week-select">
+          <option v-for="w in availableWeeks" :key="w" :value="w">{{ w }}</option>
+        </select>
+
       </label>
 
       <div v-if="mode === 'stats'" class="metrics">
@@ -70,6 +73,7 @@ const leagueTitle = computed(() => {
 })
 
 const metric = ref<Metric>('rating')
+const availableWeeks = ['2026-W01', '2026-W02', '2026-W03']
 const week = ref('CURRENT')
 const search = ref('')
 </script>
@@ -131,11 +135,13 @@ const search = ref('')
   gap: 6px;
 }
 
-.week input {
+.week-select {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 10px;
+  background: #fff;
 }
+
 
 .metrics {
   display: flex;
