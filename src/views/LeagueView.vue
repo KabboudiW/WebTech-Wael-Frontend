@@ -74,7 +74,7 @@ const leagueTitle = computed(() => {
 
 const metric = ref<Metric>('rating')
 const availableWeeks = ['2026-W01', '2026-W02', '2026-W03']
-const week = ref('CURRENT')
+const week = ref(availableWeeks[availableWeeks.length - 1])
 const search = ref('')
 </script>
 
