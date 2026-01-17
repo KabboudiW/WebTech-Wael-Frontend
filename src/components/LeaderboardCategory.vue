@@ -13,7 +13,10 @@ interface Player {
 const props = defineProps<{
   title: string
   metric?: 'rating' | 'goals' | 'assists' | 'chances' | 'missed'
+  week?: string
+  league?: string
 }>()
+
 
 // Reactive state
 const items = ref<Player[]>([])
@@ -28,7 +31,13 @@ async function loadTops(metric = props.metric || 'rating') {
     return
   }
 
-  const endpoint = `${baseUrl}/api/weekly/top?metric=${metric}`
+  const params = new URLSearchParams()
+  params.set('metric', metric)
+  params.set('week', props.week || 'CURRENT')
+  if (props.league) params.set('league', props.league)
+
+  const endpoint = `${baseUrl}/api/weekly/top?${params.toString()}`
+
 
   loading.value = true
   error.value = null
@@ -60,9 +69,11 @@ async function loadTops(metric = props.metric || 'rating') {
 onMounted(() => loadTops())
 
 // Reload leaderboard if metric changes
-watch(() => props.metric, (newMetric) => {
-  if (newMetric) loadTops(newMetric)
-})
+watch(
+  () => [props.metric, props.week, props.league],
+  () => loadTops(props.metric || 'rating')
+)
+
 </script>
 
 <template>

@@ -1,43 +1,65 @@
 <template>
-  <div class="category-view">
+  <div class="league-view">
     <router-link to="/">← Back</router-link>
-    <LeaderboardCategory :title="category" :metric="metric" />
+
+    <h1 class="title">{{ leagueTitle }}</h1>
+
+    <div class="controls">
+      <label class="week">
+        Week
+        <input v-model="week" placeholder="CURRENT or 2026-W03" />
+      </label>
+
+      <div class="metrics">
+        <button :class="{active: metric==='rating'}" @click="metric='rating'">Best Rated</button>
+        <button :class="{active: metric==='goals'}" @click="metric='goals'">Goals</button>
+        <button :class="{active: metric==='assists'}" @click="metric='assists'">Assists</button>
+        <button :class="{active: metric==='chances'}" @click="metric='chances'">Chances Created</button>
+        <button :class="{active: metric==='missed'}" @click="metric='missed'">Missed Chances</button>
+      </div>
+    </div>
+
+    <!-- ✅ Leaderboard component -->
+    <LeaderboardCategory
+      :title="`${leagueTitle} — ${metric.toUpperCase()}`"
+      :metric="metric"
+      :week="week"
+      :league="leagueCode"
+    />
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, computed } from 'vue'
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import LeaderboardCategory from '../components/LeaderboardCategory.vue'
+import { LEAGUES } from '@/config/leagues'
 
-type Metric = "rating" | "goals" | "assists" | "chances" | "missed"
+type Metric = 'rating' | 'goals' | 'assists' | 'chances' | 'missed'
 
-export default defineComponent({
-  components: { LeaderboardCategory },
-  setup() {
-    const route = useRoute()
-    const category = computed(() => route.params.name as string)
+const route = useRoute()
+const leagueCode = computed(() => String(route.params.code || ''))
 
-    // Map human-readable category to backend metric
-    const metricMap: Record<string, Metric> = {
-      "Best Rated": "rating",
-      "Goals": "goals",
-      "Assists": "assists",
-      "Chances Created": "chances",
-      "Missed Chances": "missed"
-    }
-
-    const metric = computed<Metric>(() => metricMap[category.value] || "rating")
-
-    return { category, metric }
-  }
+const leagueTitle = computed(() => {
+  const found = LEAGUES.find(l => l.code === leagueCode.value)
+  return found ? found.name : leagueCode.value
 })
+
+const metric = ref<Metric>('rating')
+const week = ref('CURRENT')
 </script>
 
 <style scoped>
-.category-view {
-  max-width: 500px;
+.league-view {
+  max-width: 900px;
   margin: 2rem auto;
-  text-align: center;
+  padding: 0 16px;
 }
+.title { margin: 12px 0 8px; }
+.controls { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin: 12px 0 16px; }
+.week { display:flex; flex-direction: column; gap: 6px; }
+.week input { padding: 10px; border: 1px solid #ccc; border-radius: 10px; }
+.metrics { display:flex; gap: 8px; flex-wrap: wrap; }
+.metrics button { padding: 8px 12px; border-radius: 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+.metrics button.active { border-color: #111; font-weight: 600; }
 </style>
