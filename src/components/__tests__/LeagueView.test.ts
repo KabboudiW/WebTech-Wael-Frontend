@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import LeagueView from "@/views/LeagueView.vue";
 
-// Mock vue-router useRoute()
 vi.mock("vue-router", () => ({
   useRoute: () => ({ params: { code: "BL1" } }),
 }));
@@ -19,14 +18,15 @@ describe("LeagueView", () => {
       },
     });
 
-    // Default: stats visible
     expect(wrapper.find("[data-test='stats']").exists()).toBe(true);
     expect(wrapper.find("[data-test='results']").exists()).toBe(false);
 
-    // Click "Match Results" (2nd tab button)
-    const buttons = wrapper.findAll("button");
-    // Erwartung: 1st = Player Stats, 2nd = Match Results
-    await buttons[1].trigger("click");
+    const resultsBtn = wrapper
+      .findAll("button")
+      .find((b) => b.text().includes("Match Results"));
+
+    expect(resultsBtn).toBeTruthy();
+    await resultsBtn!.trigger("click");
 
     expect(wrapper.find("[data-test='results']").exists()).toBe(true);
   });
